@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block title %}
+Posts
+{% endblock %}
+{% block content %}
+
+    <h1>reddit Posts</h1> <br>
+
+    <h3> {% if form.instance.pk %}
+        Edit Post
+        {% else %}
+        Create Post
+        
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="form">
+            {% csrf_token %}
+            {{form.as_p}}
+            <button class="btn btn-warning" type="submit">Submit</button>
+        </form>
+
+        <a href="{% url 'post_list' %}">Back to posts list</a>
+    
+    
+    
+    
+    </h3>
+    
+
+{% endblock %}
