@@ -1,9 +1,50 @@
 {% extends "layout.html" %}
-
-{% block title %}{% endblock %}
-
+{% block title %}
+Posts
+{% endblock %}
 {% block content %}
-<h2>successfully Logged out!</h2>
 
+<!-- Create Post Button -->
+<a class="btn btn-primary mb-4" href="{% url 'post_create' %}">Create Post</a>
+
+<!-- Container for Posts -->
+<div class="container">
+    <div class="row">
+        <!-- Loop through each post -->
+        {% for post in posts %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <!-- Post Image -->
+                <img src="{{ post.photo.url }}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <!-- User Information -->
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="{{ post.photo.url }}" class="rounded-circle" alt="{{ post.user.username }}" width="40" height="40">
+                        <h5 class="card-title ms-2 mb-0">{{ post.user.username }}</h5>
+                    </div>
+                    <!-- Post Text -->
+                    <p class="card-text">{{ post.text }}</p>
+                    <!-- Edit/Delete Buttons (for Post Owner) -->
+                    {% if post.user == user %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'post_edit' post.id %}" class="btn btn-primary">Edit</a>
+                        <a href="{% url 'post_delete' post.id %}" class="btn btn-danger">Delete</a>
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Card Footer with Upvote/Downvote and Comment Links -->
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <div>
+                        <button class="btn btn-sm btn-outline-success">Upvote</button>
+                        <button class="btn btn-sm btn-outline-danger">Downvote</button>
+                    </div>
+                    {% comment %} {% url 'post_detail' post.id %} {% endcomment %}
+                    <a href="#" class="btn btn-sm btn-outline-secondary">Comments</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 {% endblock %}

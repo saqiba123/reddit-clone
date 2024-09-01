@@ -12,8 +12,18 @@ class Post(models.Model):
     photo = models.ImageField(upload_to="postImages/",blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    upvotes = models.PositiveIntegerField(default=0)
+    downvotes = models.PositiveIntegerField(default=0)
     
     def __str__(self) -> str:
         return f"{self.user.username} - {self.text[:11]}"
     
     
+class Comment(models.Model):
+    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField(max_length=240)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self) -> str:
+        return f"{self.user.username} - {self.text[:11]}"

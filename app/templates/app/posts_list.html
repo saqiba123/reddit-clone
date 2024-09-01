@@ -4,44 +4,81 @@ Posts
 {% endblock %}
 {% block content %}
 
-<!-- Create Post Button -->
-<a class="btn btn-primary mb-4" href="{% url 'post_create' %}">Create Post</a>
+<!-- Display Messages -->
+{% if messages %}
+    <div class="container">
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 <!-- Container for Posts -->
 <div class="container">
-    <div class="row">
+    <div class="row justify-content-center">
         <!-- Loop through each post -->
         {% for post in posts %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <!-- Post Image -->
-                <img src="{{ post.photo.url }}" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <!-- User Information -->
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="{{ post.photo.url }}" class="rounded-circle" alt="{{ post.user.username }}" width="40" height="40">
-                        <h5 class="card-title ms-2 mb-0">{{ post.user.username }}</h5>
-                    </div>
-                    <!-- Post Text -->
-                    <p class="card-text">{{ post.text }}</p>
-                    <!-- Edit/Delete Buttons (for Post Owner) -->
-                    {% if post.user == user %}
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'post_edit' post.id %}" class="btn btn-primary">Edit</a>
-                        <a href="{% url 'post_delete' post.id %}" class="btn btn-danger">Delete</a>
-                    </div>
+        <div class="col-md-8 mb-4"> <!-- Adjust the column width as needed -->
+            <a href="{% url 'post_detail' post.id %}" style="text-decoration: none; color: inherit;">
+                <div class="card h-100">
+                    <!-- Post Image -->
+                    {% if post.photo %}
+                        <img src="{{ post.photo.url }}" class="card-img-top" alt="{{ post.user.username }}" style="max-height: 300px; object-fit: cover;">
                     {% endif %}
-                </div>
-                <!-- Card Footer with Upvote/Downvote and Comment Links -->
-                <div class="card-footer d-flex justify-content-between align-items-center">
-                    <div>
-                        <button class="btn btn-sm btn-outline-success">Upvote</button>
-                        <button class="btn btn-sm btn-outline-danger">Downvote</button>
+                    
+                    <div class="card-body">
+                        <!-- User Information -->
+                        <div class="d-flex align-items-center mb-2">
+                            {% if post.photo %}
+                                <img src="{{ post.photo.url }}" class="rounded-circle" alt="{{ post.user.username }}" width="40" height="40">
+                            {% endif %}
+                            <h5 class="card-title ms-2 mb-0">{{ post.user.username }}</h5>
+                        </div>
+                        <!-- Post Text -->
+                        <p class="card-text">{{ post.text }}</p>   </a>
+                        <!-- Edit/Delete Buttons (for Post Owner) -->
+                        {% if post.user == user %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'post_edit' post.id %}" class="btn btn-primary">Edit</a>
+                            <a href="{% url 'post_delete' post.id %}" class="btn btn-danger">Delete</a>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% comment %} {% url 'post_detail' post.id %} {% endcomment %}
-                    <a href="#" class="btn btn-sm btn-outline-secondary">Comments</a>
+              
+                    <!-- Card Footer with Upvote/Downvote and Comment Links -->
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if request.user.is_authenticated %}
+                                <button class="btn btn-sm btn-outline-success" onclick="upvote({{ post.id }})">Upvote (<span id="upvote-count-{{ post.id }}">{{ post.upvotes }}</span>)</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="downvote({{ post.id }})">Downvote (<span id="downvote-count-{{ post.id }}">{{ post.downvotes }}</span>)</button>
+                            {% else %}
+                                <form method="post" action="{% url 'upvote_post' post.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                                    <button class="btn btn-sm btn-outline-success" type="submit">Upvote (<span id="upvote-count-{{ post.id }}">{{ post.upvotes }}</span>)</button>
+                                </form>
+                                <form method="post" action="{% url 'downvote_post' post.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Downvote (<span id="downvote-count-{{ post.id }}">{{ post.downvotes }}</span>)</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'post_detail' post.id %}" class="btn btn-sm btn-outline-secondary">Comments</a>
+                        {% else %}
+                            <form method="post" action="{% url 'add_comment' post.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="post_id" value="{{ post.id }}">
+                                <button class="btn btn-sm btn-outline-secondary" type="submit">Comments</button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
+            
         </div>
         {% endfor %}
     </div>

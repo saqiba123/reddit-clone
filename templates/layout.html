@@ -30,21 +30,29 @@
                       <a class="nav-link active" aria-current="page" href="{% url 'post_list' %}">Home</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link" href="#">Popular</a>
+                      <a class="nav-link" href="{% url 'latest_list' %}">Latest</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link" href="#">All</a>
+                      <a class="nav-link" href="{% url 'tech_list' %}">Tech</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link" href="#">Top Communities</a>
+                      <a class="nav-link" href="{% url 'sport_list' %}">Sports</a>
                   </li>
+                  {% if user.is_authenticated %}
+                  <li class="nav-item">
+                    <!-- Create Post Button -->
+                    <a class="nav-link" href="{% url 'post_create' %}"> + Create</a>
+                  </li>
+                  {% endif %}
               </ul>
               
-              <!-- Search Bar -->
+              <!-- Conditionally display the search bar -->
+              {% if show_search_bar %}
               <form class="d-flex me-2" role="search">
                   <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                   <button class="btn btn-outline-success" type="submit">Search</button>
               </form>
+              {% endif %}
                 {% if user.is_authenticated %}
                 <form action="{% url 'logout' %}" method="post">
                   {% csrf_token %}
@@ -65,7 +73,74 @@
 
     <div class="container">{% block content %} {% endblock %}</div>
 
-
+    <script>
+        // Function to get CSRF token from the cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        // Fetch CSRF token from the template
+        const csrftoken = '{{ csrf_token }}'; // Ensure this is included in the template
+    
+        function upvote(postId) {
+            fetch(`/${postId}/upvote/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.querySelector(`#upvote-count-${postId}`).textContent = data.upvotes;
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        }
+    
+        function downvote(postId) {
+            fetch(`/${postId}/downvote/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.querySelector(`#downvote-count-${postId}`).textContent = data.downvotes;
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        }
+        function showMessage() {
+            alert('You are not logged in!');
+        }
+    </script>
+  
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

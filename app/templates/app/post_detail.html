@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block title %}
+Post Detail
+{% endblock %}
+{% block content %}
+{% if messages %}
+    <div class="container">
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+
+<div class="post-detail" style="max-width: 600px; margin: 0 auto;">
+   
+    <h1>{{ post.title }}</h1>
+    {% if post.photo %}
+        <img src="{{ post.photo.url }}" alt="{{ post.title }}" class="img-fluid mb-3" style="max-width: 500px; height: auto;">
+    {% endif %}
+    <p>{{ post.text }}</p>
+
+    <!-- Upvote/Downvote Section -->
+    
+                    
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if request.user.is_authenticated %}
+                                <button class="btn btn-sm btn-outline-success" onclick="upvote({{ post.id }})">Upvote (<span id="upvote-count-{{ post.id }}">{{ post.upvotes }}</span>)</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="downvote({{ post.id }})">Downvote (<span id="downvote-count-{{ post.id }}">{{ post.downvotes }}</span>)</button>
+                            {% else %}
+                                <form method="post" action="{% url 'upvote_post' post.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                                    <button class="btn btn-sm btn-outline-success" type="submit">Upvote (<span id="upvote-count-{{ post.id }}">{{ post.upvotes }}</span>)</button>
+                                </form>
+                                <form method="post" action="{% url 'downvote_post' post.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Downvote (<span id="downvote-count-{{ post.id }}">{{ post.downvotes }}</span>)</button>
+                                    
+                                </form>
+                                
+                            {% endif %}
+                        </div>
+                        
+                    </div>
+    </div>
+    
+   <!-- Comment Section -->
+   <h3 class="mt-4">Comments</h3>
+   <div id="comments">
+       {% for comment in comments %}
+       <div class="comment mb-2">
+           <strong>{{ comment.user.username }}</strong>:
+           <p>{{ comment.text }}</p>
+           <small>{{ comment.created_at }}</small>
+       </div>
+       {% endfor %}
+   </div>
+
+   <!-- Add Comment Form -->
+   {% if user.is_authenticated %}
+   <form method="post" action="{% url 'add_comment' post.id %}">
+       {% csrf_token %}
+       <textarea name="text" class="form-control" placeholder="Add a comment..."></textarea>
+       <button type="submit" class="btn btn-primary mt-2">Add Comment</button>
+   </form>
+   {% endif %}
+
+   <!-- Back Button and Edit/Delete Buttons -->
+   <div class="d-flex justify-content-between mt-4">
+       <a href="{% url 'post_list' %}" class="btn btn-secondary">Back</a>
+       {% if post.user == user %}
+       <div>
+           <a href="{% url 'post_edit' post.id %}" class="btn btn-primary">Edit</a>
+           <a href="{% url 'post_delete' post.id %}" class="btn btn-danger">Delete</a>
+       </div>
+       {% endif %}
+   </div>
+    
+</div>
+
+{% endblock %}
